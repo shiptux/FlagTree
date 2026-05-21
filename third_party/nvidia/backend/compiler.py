@@ -15,6 +15,7 @@ import signal
 import os
 import subprocess
 from pathlib import Path
+from .distributed import Distributed
 
 
 def min_dot_size(target: GPUTarget):
@@ -137,7 +138,7 @@ class CUDAOptions:
         extern_libs = {} if self.extern_libs is None else dict(self.extern_libs)
         if not extern_libs.get('libdevice', None):
             extern_libs['libdevice'] = knobs.nvidia.libdevice_path or str(default_libdir / 'libdevice.10.bc')
-
+        extern_libs.update(Distributed().get_extern_libs())
         object.__setattr__(self, 'extern_libs', tuple(extern_libs.items()))
         assert self.num_warps > 0 and (self.num_warps & (self.num_warps - 1)) == 0, \
                "num_warps must be a power of 2"
